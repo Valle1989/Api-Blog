@@ -1,6 +1,7 @@
 package com.challenge.backend.blog.dao;
 
 import com.challenge.backend.blog.models.Posteo;
+import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.CrudRepository;
 import org.springframework.data.repository.query.Param;
@@ -9,9 +10,10 @@ import org.springframework.stereotype.Repository;
 import java.util.List;
 
 @Repository
-public interface PosteoDao extends CrudRepository<Posteo, Long> {
+public interface PosteoDao extends JpaRepository<Posteo, Long> {
 
-    @Query("select new Posteo(p.id, p.titulo, p.imagen, p.fecha_creacion) FROM Posteo p")
+    @Query("select new Posteo(p.id, p.titulo, p.imagen, p.categoria, p.fecha_creacion) " +
+            "FROM Posteo p order by p.fecha_creacion desc")
     public List<Posteo> ListPosteosOrdernadosDesc();
 
     @Query("from Posteo p where p.titulo =:titulo")

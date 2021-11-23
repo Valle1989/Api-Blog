@@ -32,9 +32,14 @@ public class PosteoServiceImpl implements PosteoService{
     }
 
     @Override
-    @Transactional(propagation = Propagation.NESTED)
+    @Transactional
     public Posteo save(Posteo posteo) {
         return posteoDaoImpl.save(posteo);
+    }
+
+    @Override
+    public Posteo update(Long id,Posteo posteo) {
+        return posteoDaoImpl.update(id, posteo);
     }
 
     @Override
@@ -70,5 +75,10 @@ public class PosteoServiceImpl implements PosteoService{
         } catch (Exception err) {
             return false;
         }
+    }
+
+    @Override
+    public List<Posteo> findAllFilter(boolean isDeleted) {
+        return posteoDaoImpl.findAllFilter(isDeleted);
     }
 }

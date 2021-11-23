@@ -4,14 +4,28 @@ import com.fasterxml.jackson.annotation.JsonIdentityInfo;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.ObjectIdGenerators;
 import lombok.Data;
+import org.hibernate.annotations.*;
 
 import javax.persistence.*;
+import javax.persistence.CascadeType;
+import javax.persistence.Entity;
+import javax.persistence.Table;
 import java.io.Serializable;
 import java.util.Date;
 
 @Data
 @Entity
 @Table(name = "posteo")
+@SQLDelete(sql = "UPDATE posteo SET deleted = true WHERE id=?")
+@FilterDef(
+        name = "deletedPosteoFilter",
+        parameters = @ParamDef(name = "isDeleted", type = "boolean")
+)
+@Filter(
+        name = "deletedPosteoFilter",
+        condition = "deleted = :isDeleted"
+)
+//@Where(clause = "deleted=false")
 @JsonIdentityInfo(generator= ObjectIdGenerators.IntSequenceGenerator.class, property="@id")
 @JsonInclude(JsonInclude.Include.NON_NULL)
 public class Posteo implements Serializable {
@@ -37,6 +51,8 @@ public class Posteo implements Serializable {
     @ManyToOne(cascade = { CascadeType.ALL})
     @JoinColumn(name = "id_usuario")
     private Usuario usuario;
+
+    private boolean deleted = Boolean.FALSE;
 
     public Posteo() {
     }

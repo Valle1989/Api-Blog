@@ -1,9 +1,10 @@
 package com.challenge.backend.blog.controller;
 
-import com.challenge.backend.blog.exception.DatosErróneosException;
 import com.challenge.backend.blog.models.Posteo;
 import com.challenge.backend.blog.service.PosteoService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import javax.servlet.http.HttpServletRequest;
@@ -22,19 +23,19 @@ public class PosteoController {
         String category = request.getParameter("category");
         String titulo = request.getParameter("titulo");
 
-        if(title != null){
+        if (title != null) {
             return this.posteoService.findByTitulo(title);
-        } else if(category != null){
+        } else if (category != null) {
             return this.posteoService.findPosteosByCategoria(category);
-        } else if (titulo != null && category != null){
+        } else if (titulo != null && category != null) {
             return this.posteoService.findPosteosByTituloAndCategoria(titulo, category);
-        } else{
+        } else {
             return posteoService.listadoPosteosOrdenados();
         }
     }
 
     @GetMapping("/detalle")
-    public List<Posteo> detallePosteos(){
+    public List<Posteo> detallePosteos() {
         return posteoService.detallePosteos();
     }
 
@@ -43,16 +44,25 @@ public class PosteoController {
         posteoService.save(posteo);
     }
 
-    @GetMapping(path = "/{id}")
-    public Posteo obtenerPosteoPorId(@PathVariable("id") Long id) {
-        if(id == null){
-            try {
-                throw new DatosErróneosException("Error, el id ingresado no existe en la base de datos");
-            } catch (DatosErróneosException e) {
-                e.printStackTrace();
-            }
+    @PatchMapping("/actualizar/{id}")
+    public ResponseEntity<?> actualizar(@PathVariable("id") Long id, @RequestBody Posteo posteo) {
+        try{
+            posteoService.update(id, posteo);
+            return new ResponseEntity<>("Posteo actualizado", HttpStatus.OK);
+        }catch(Exception e){
+            return new ResponseEntity<>("No existe el id especificado " + e.toString(), HttpStatus.CONFLICT);
         }
-            return this.posteoService.obtenerPorId(id);
+    }
+
+    @GetMapping(path = "/{id}")
+    public ResponseEntity<?> obtenerPosteoPorId(@PathVariable("id") Long id) {
+        try{
+            Posteo post = posteoService.obtenerPorId(id);
+            return new ResponseEntity<>(post, HttpStatus.OK);
+        }catch(Exception e){
+            e.getMessage();
+            return new ResponseEntity<>("No existe el id que se quiere obtener " + e.toString(), HttpStatus.CONFLICT);
+        }
     }
 
     @DeleteMapping(path = "/{id}")
@@ -65,4 +75,12 @@ public class PosteoController {
         }
 
     }
+
+    @GetMapping(value = "/borrados")
+    public ResponseEntity<List<Posteo>> findAll(@RequestParam(value =
+            "isDeleted", required = false, defaultValue = "false") boolean isDeleted) {
+        List<Posteo> posteos = posteoService.findAllFilter(isDeleted);
+        return new ResponseEntity<>(posteos, HttpStatus.OK);
+    }
 }
+
